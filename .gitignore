@@ -1,0 +1,42 @@
+# 源码与配置入库；本地环境、个人数据与内部记录不入库。
+
+# 本地隔离环境 / 依赖
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# 构建产物与日志
+dist/
+build/
+*.log
+.env
+.env.*
+*.local
+
+# 用户真实使用数据（含 token / 费用明细）
+data.json
+
+# 导出物：只保留三份交付样本，其余运行期导出不入库
+*.gif
+!exports/sample-on.gif
+!exports/sample-off.gif
+!exports/sample-qq.gif
+*.png
+*.webm
+*.mp3
+*.wav
+*.ogg
+
+# 本地工作日志与内部协作记录：含本机绝对路径、团队 UUID、agent 通信内容
+.workbuddy/
+.codebuddy/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 说明：vendor/*.global.js 是运行期必需的离线依赖，刻意保留，不排除。

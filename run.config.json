@@ -1,0 +1,47 @@
+{
+  "name": "burning-token",
+  "version": "2.1.0",
+  "localOnly": false,
+  "publish": {
+    "github": true,
+    "remote": "https://github.com/Elisabeth15501/burning-token",
+    "note": "源码托管于 GitHub。页面本身仍在浏览器内离线运行：不发任何网络请求，不加载 CDN，不读取远端数据；本地服务只监听回环地址。"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8787,
+    "entry2d": "index.html",
+    "entry3d": "3d.html",
+    "note": "只监听回环地址，不对局域网开放。两个页面也可用普通 script 直接双击打开（file://），但通过本地服务访问可避免个别浏览器对 canvas 的读取限制。"
+  },
+  "dataSource": {
+    "defaultPath": "agent-analytics-report/data.json",
+    "pathNote": "相对同级仓库的示意路径；实际由用户在页面里选择文件，仓库不记录任何本机绝对路径。",
+    "mode": "local-file-select",
+    "note": "浏览器不能静默读取本机绝对路径（file:// 下 fetch 会被拦截），因此由用户在页面里选择 data.json，用 FileReader 本机解析；不联网、不上传。"
+  },
+  "defaults": {
+    "tokens": 1234567,
+    "scene": "dumpster",
+    "energyPreset": "paper",
+    "pue": 1.41,
+    "sound": false,
+    "bgm": false
+  },
+  "mapping": {
+    "formula": "h = 0.18 + 0.82 * log10(T + 1) / 9",
+    "ticks": [1, 1000, 1000000, 1000000000],
+    "note": "2D 像素版与 3D 版共用 app/core.js 的 mapping()，渲染器按 heightRatio 反解粒子初速，使火焰实测高度贴合刻度。垃圾箱场景的火焰自箱口起算，故其可用像素高度小于营火场景。"
+  },
+  "gif": {
+    "wechat": {"w": 240, "h": 240, "fps": 10, "seconds": 2, "colors": 64, "limitKB": 500},
+    "qq": {"w": 320, "h": 320, "fps": 12, "seconds": 2.5, "colors": 128, "limitKB": 5000},
+    "specSources": "research.md 第四节"
+  },
+  "environment": {
+    "node": "node_modules/  (three / gifenc / esbuild，仅构建期使用)",
+    "vendor": "vendor/  (预打包的 three.global.js / gifenc.global.js，运行期离线使用)",
+    "python": ".venv/  (Python 3.14 虚拟环境，运行 serve.py 本地静态服务)",
+    "reproduce": "npm ci && npm run build:vendor && npm start   或   .venv/Scripts/python.exe serve.py"
+  }
+}

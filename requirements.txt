@@ -1,0 +1,7 @@
+# 本地虚拟环境依赖清单
+# 运行期只使用 Python 3.14 标准库（http.server / json / pathlib / functools），无第三方包。
+# 前端依赖由 npm 管理，见 package.json；其运行期产物已预打包在 vendor/ 中，离线可用。
+#
+# 创建环境：  C:/Python314/python.exe -m venv .venv
+# 启动服务：  .venv/Scripts/python.exe serve.py
+# 校验环境：  .venv/Scripts/python.exe -c "import sys; print(sys.prefix)"

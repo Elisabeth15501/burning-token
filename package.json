@@ -1,0 +1,18 @@
+{
+  "name": "burning-token-local",
+  "version": "2.0.0",
+  "private": true,
+  "description": "燃烧的 Token — 本地离线运行的 2D/3D 火焰可视化艺术品",
+  "scripts": {
+    "start": "node serve.js",
+    "serve": "node serve.js",
+    "serve:py": ".venv/Scripts/python.exe serve.py",
+    "build:vendor": "esbuild node_modules/three/build/three.module.js --bundle --format=iife --global-name=THREE --outfile=vendor/three.global.js --minify && esbuild node_modules/gifenc/dist/gifenc.esm.js --bundle --format=iife --global-name=GIFENC --outfile=vendor/gifenc.global.js --minify",
+    "check": "node --check serve.js && node --check app/research.js && node --check app/core.js && node --check app/ui.js && node --check app/flame2d.js && node --check app/flame3d.js && node --check app/gif.js"
+  },
+  "dependencies": {
+    "esbuild": "^0.28.2",
+    "gifenc": "^1.0.3",
+    "three": "^0.187.0"
+  }
+}

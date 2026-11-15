@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BURNING TOKENS / 燃烧的 Token · 2D 像素版</title>
+<link rel="stylesheet" href="app/style.css">
+</head>
+<body data-phase="input">
+<div class="wrap">
+  <header>
+    <div class="brand">BURNING TOKENS<small>燃烧的 Token · 一件关于 Vibecoding 的小装置</small></div>
+    <div class="headright">
+      NO. 001 / 2026 · 2D 像素版
+      <div class="views"><a class="cur" href="index.html">2D 像素</a><a href="3d.html">3D 火焰</a></div>
+    </div>
+  </header>
+
+  <!-- ══ 幕 1：账单开场 ══ -->
+  <section class="act act-hero" id="actInput">
+    <div class="hero">
+      <div class="hero-fig">FIG. 00 — 一份迟到的账单</div>
+      <h1 class="hero-title">你的可视化<br><b>TOKEN 账单</b></h1>
+      <div class="hero-sum">
+        你总共用了 <b id="heroTokens">1,234,567</b> 个 token
+        <span class="hero-wh">折合约 <b id="heroEnergy">—</b> 电。这些电没变成产品，变成了热。</span>
+      </div>
+      <div class="hero-input">
+        <span class="label">TOKENS</span>
+        <input type="text" id="tokenInput" value="1,234,567" inputmode="numeric" aria-label="Token 总量">
+        <button id="load">载入 data.json</button>
+        <input type="file" id="file" accept=".json,application/json">
+      </div>
+      <div class="hero-input">
+        <span class="label">SCALE 10⁰→10⁹</span>
+        <input type="range" id="slider" min="0" max="900" value="609" aria-label="对数刻度调节">
+      </div>
+      <button class="cta" id="start">开始结算 <span>→</span></button>
+      <p class="hero-note">下一步会把你这个数字翻译成一串类比。<br>
+        前五个有真实能量基准，后面几个……开始不讲道理了。</p>
+    </div>
+  </section>
+
+  <!-- ══ 幕 2：类比幻灯片 ══ -->
+  <section class="act act-slides" id="actSlides" hidden>
+    <div class="slides-wrap">
+      <div class="slide-head">
+        <span class="slide-count"><b id="slideIdx">01</b> / <span id="slideTotal">10</span></span>
+        <span class="act-break" id="actBreak" hidden></span>
+      </div>
+      <div class="slide-card" id="slideCard" role="button" tabindex="0" aria-label="点击进入下一条"></div>
+      <div class="dots" id="dots"></div>
+      <div class="slide-foot">
+        <button class="ghost" id="skip">跳过，直接看它烧 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 幕 3：结算 ══ -->
+  <section class="act act-settle" id="actSettle" hidden>
+    <div class="settle">
+      <div class="settle-main">
+        <div class="stage" id="stage">
+          <canvas id="fire" class="pixel" width="120" height="150" aria-label="随 token 消耗量变化的像素火焰"></canvas>
+          <div class="glow" id="glow"></div>
+          <div class="slops" id="slops"></div>
+          <div class="tag tl">FIG. 03 — 结算</div>
+          <div class="scene-name" id="sceneName">DUMPSTER</div>
+          <div class="tag br">FUEL: AI SLOP</div>
+        </div>
+        <section class="readout" id="readout" aria-live="polite">
+          <div class="number" id="number">1,234,567</div>
+          <div class="unit">TOKENS BURNED</div>
+          <div class="cost" id="cost"></div>
+        </section>
+        <div class="quip" id="quip"></div>
+      </div>
+
+      <aside class="settle-side">
+        <div class="recap-box">
+          <h3>刚才那组数 <small>同一次换算，再列一遍</small></h3>
+          <div class="recap" id="recap"></div>
+        </div>
+        <div class="recap-box">
+          <h3>折合多少个项目 <small>独立标尺，不相加</small></h3>
+          <div class="recap" id="recapBench"></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="settle-controls">
+      <div class="row">
+        <span class="label">SCENE</span>
+        <button data-scene="dumpster" class="on">垃圾箱火灾</button>
+        <button data-scene="campfire">营火</button>
+        <button data-scene="barbecue">烧烤</button>
+      </div>
+      <div class="row">
+        <button id="toggleNum">隐藏数字</button>
+        <button id="reload">换一句吐槽</button>
+        <button id="sound">火焰声：关</button>
+        <button id="bgm">BGM：关</button>
+        <button id="recalc">改数字重算</button>
+      </div>
+      <div class="row">
+        <button id="savePng" class="primary">保存卡片 PNG</button>
+        <button id="gifWechat" class="primary">导出 GIF · 微信</button>
+        <button id="gifQq" class="primary">导出 GIF · QQ</button>
+        <button id="share" class="primary">复制分享链接</button>
+      </div>
+      <div class="bgmplan" id="bgmPlan"></div>
+      <div class="progress" id="progress"></div>
+      <p class="hint" id="hint">导出的 GIF / PNG 会带上当前场景、token 数（可在上方关掉）和这句吐槽。载入 data.json 只在本机解析，不联网、不上传。</p>
+    </div>
+  </section>
+
+  <!-- ══ 账单明细（默认收起） ══ -->
+  <details class="dossier">
+    <summary>账单明细 / DOSSIER <span>映射公式 · 解析数值 · 能量口径 · 分口径基准</span></summary>
+    <div class="dossier-body">
+      <section class="block">
+        <h2>01 / 数值 → 火焰尺寸 <span>2D 与 3D 共用同一映射</span></h2>
+        <div class="scale" id="scale">
+          <div class="track"></div>
+          <div class="ticks" id="scaleTicks"></div>
+          <div class="pin" id="scalePin"></div>
+        </div>
+        <div class="mapformula" id="heightNow"></div>
+        <div class="mapformula">映射公式 <b>h = 0.18 + 0.82 × log₁₀(T + 1) / 9</b>　·　T = 0 时火焰完全熄灭；T = 10⁹ 时达到 100% 并封顶，不溢出画面。垃圾箱场景中火焰自箱口起算。</div>
+      </section>
+
+      <section class="block">
+        <h2>02 / 解析出的消耗数值 <span>来自 agent 使用数据</span></h2>
+        <div class="metrics" id="metrics"></div>
+      </section>
+
+      <section class="block">
+        <h2>03 / 能量估算 <span>通用能量单位 · 可切换口径</span></h2>
+        <div class="energy-grid">
+          <div class="energy-cell"><b id="energyJ">—</b><span>J 焦耳</span></div>
+          <div class="energy-cell"><b id="energyWh">—</b><span>Wh 瓦时</span></div>
+          <div class="energy-cell"><b id="energyKwh">—</b><span>kWh 千瓦时</span></div>
+        </div>
+        <div class="formula" id="energyFormula"></div>
+        <div class="src" id="energySource"></div>
+        <div class="row" style="margin-top:12px">
+          <span class="label">能耗口径</span><select id="energyPresetSel" aria-label="能耗口径"></select>
+          <span class="label">PUE</span><select id="pueSel" aria-label="PUE 取值"></select>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>04 / 完整类比 <span>含来源与虚构标注</span></h2>
+        <div class="ana" id="analogies"></div>
+      </section>
+
+      <section class="block">
+        <h2>05 / 一个项目到底烧多少 Token <span>分口径基准 · 独立标尺</span></h2>
+        <div id="bench"></div>
+      </section>
+    </div>
+  </details>
+
+  <div class="fuelbar">
+    <span><b>FUEL: AI SLOP</b></span><span>NOTHING WAS SHIPPED.</span>
+    <span>NO NETWORK · LOCAL ONLY</span>
+  </div>
+  <div class="meta">A SELF-PORTRAIT OF THE VIBE CODING ERA<br>
+    调研口径与全部来源：<a href="research.md">research.md</a></div>
+</div>
+
+<script src="vendor/gifenc.global.js"></script>
+<script src="app/research.js"></script>
+<script src="app/core.js"></script>
+<script src="app/flame2d.js"></script>
+<script src="app/gif.js"></script>
+<script src="app/ui.js"></script>
+<script src="app/story.js"></script>
+<script>
+  window.BT2D.init(document.getElementById('fire'), document.getElementById('glow'), document.getElementById('stage'));
+  window.BTUI.init({renderer: window.BT2D});
+  window.BTSTORY.init({renderer: window.BT2D, mode:'2d'});
+</script>
+</body>
+</html>
