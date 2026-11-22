@@ -21,7 +21,8 @@
     "note": "浏览器不能静默读取本机绝对路径（file:// 下 fetch 会被拦截），因此由用户在页面里选择 data.json，用 FileReader 本机解析；不联网、不上传。"
   },
   "defaults": {
-    "tokens": 1234567,
+    "tokens": 3330000,
+    "tokenBasis": "一次会话（arXiv:2608.00101，44.9T prompt tokens ÷ 13.5M sessions ≈ 333 万），见 research.md 第一节与第三节",
     "scene": "dumpster",
     "energyPreset": "paper",
     "pue": 1.41,
@@ -29,9 +30,10 @@
     "bgm": false
   },
   "mapping": {
-    "formula": "h = 0.18 + 0.82 * log10(T + 1) / 9",
-    "ticks": [1, 1000, 1000000, 1000000000],
-    "note": "2D 像素版与 3D 版共用 app/core.js 的 mapping()，渲染器按 heightRatio 反解粒子初速，使火焰实测高度贴合刻度。垃圾箱场景的火焰自箱口起算，故其可用像素高度小于营火场景。"
+    "formula": "h = 0.18 + 0.82 * log10(T + 1) / 15",
+    "ticks": [1, 1000, 1000000, 1000000000, 1000000000000, 1000000000000000],
+    "maxTokens": 1000000000000000,
+    "note": "2D 像素版与 3D 版共用 app/core.js 的 mapping()，渲染器按 heightRatio 反解粒子初速，使火焰实测高度贴合刻度。垃圾箱场景的火焰自箱口起算，故其可用像素高度小于营火场景。2026-11-21 刻度上限由 10⁹ 提升到 10¹⁵：滑块 max 900→1500，文本框/URL/data.json 统一 clamp 到 1e15，以兼容 extreme 用户（周 2.1e11）与大型 agentic 项目（数万亿 token）。"
   },
   "gif": {
     "wechat": {"w": 240, "h": 240, "fps": 10, "seconds": 2, "colors": 64, "limitKB": 500},

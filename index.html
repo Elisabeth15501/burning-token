@@ -22,18 +22,18 @@
       <div class="hero-fig">FIG. 00 — 一份迟到的账单</div>
       <h1 class="hero-title">你的可视化<br><b>TOKEN 账单</b></h1>
       <div class="hero-sum">
-        你总共用了 <b id="heroTokens">1,234,567</b> 个 token
+        你总共用了 <b id="heroTokens">3,330,000</b> 个 token
         <span class="hero-wh">折合约 <b id="heroEnergy">—</b> 电。这些电没变成产品，变成了热。</span>
       </div>
       <div class="hero-input">
         <span class="label">TOKENS</span>
-        <input type="text" id="tokenInput" value="1,234,567" inputmode="numeric" aria-label="Token 总量">
+        <input type="text" id="tokenInput" value="3,330,000" inputmode="numeric" aria-label="Token 总量">
         <button id="load">载入 data.json</button>
         <input type="file" id="file" accept=".json,application/json">
       </div>
       <div class="hero-input">
-        <span class="label">SCALE 10⁰→10⁹</span>
-        <input type="range" id="slider" min="0" max="900" value="609" aria-label="对数刻度调节">
+        <span class="label">SCALE 10⁰→10¹⁵</span>
+        <input type="range" id="slider" min="0" max="1500" value="652" aria-label="对数刻度调节">
       </div>
       <button class="cta" id="start">开始结算 <span>→</span></button>
       <p class="hero-note">下一步会把你这个数字翻译成一串类比。<br>
@@ -69,7 +69,7 @@
           <div class="tag br">FUEL: AI SLOP</div>
         </div>
         <section class="readout" id="readout" aria-live="polite">
-          <div class="number" id="number">1,234,567</div>
+          <div class="number" id="number">3,330,000</div>
           <div class="unit">TOKENS BURNED</div>
           <div class="cost" id="cost"></div>
         </section>
@@ -126,7 +126,7 @@
           <div class="pin" id="scalePin"></div>
         </div>
         <div class="mapformula" id="heightNow"></div>
-        <div class="mapformula">映射公式 <b>h = 0.18 + 0.82 × log₁₀(T + 1) / 9</b>　·　T = 0 时火焰完全熄灭；T = 10⁹ 时达到 100% 并封顶，不溢出画面。垃圾箱场景中火焰自箱口起算。</div>
+        <div class="mapformula">映射公式 <b>h = 0.18 + 0.82 × log₁₀(T + 1) / 15</b>　·　T = 0 时火焰完全熄灭；T = 10¹⁵ 时达到 100% 并封顶，不溢出画面。垃圾箱场景中火焰自箱口起算。</div>
       </section>
 
       <section class="block">

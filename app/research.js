@@ -1,6 +1,6 @@
 /* 调研常量表 — 完整论证与来源见 research.md，禁止在此填入无来源数字 */
 window.BT_RESEARCH = {
-  updated: '2026-11-12',
+  updated: '2026-11-21',
   disclaimer: '能量按 tokens × J/token × PUE 估算。J/token 无权威常数，结果为推理边际电耗量级参考，不含模型训练、硬件制造、终端与网络能耗。',
 
   energyPresets: [
@@ -22,12 +22,14 @@ window.BT_RESEARCH = {
     {v:1.56, label:'1.56 · Uptime 行业均值', src:'Uptime Institute 2024', url:'http://datacenter.uptimeinstitute.com/rs/711-RIA-145/images/2024.GlobalDataCenterSurvey.Report.pdf'}
   ],
 
-  /* unitWh = 一个「类比单位」所对应的瓦时 */
+  /* 类比单位：wh = 固定瓦时基准；tokens = token 基准（随 J/token、PUE 预设联动，分子分母约掉） */
   analogies: [
+    {id:'session', label:'一次会话', unit:'次', tokens:3330000, caveat:true,
+      src:'arXiv:2608.00101，44.9T prompt tokens ÷ 13.5M sessions；中位会话 3 轮 / 15 次调用。按 token 基准换算（与 J/token、PUE 预设无关）；仅计 prompt tokens，不含输出',
+      url:'https://arxiv.org/abs/2608.00101'},
     {id:'led', label:'9 W LED 灯泡点亮', unit:'小时', wh:9, src:'ENERGY STAR 认证 60W 等效 LED 实测 9.0 W', url:'https://www.energystar.gov/productfinder/product/certified-light-bulbs/details/2301718'},
     {id:'phone', label:'智能手机充满', unit:'次', wh:19, src:'US EPA 2024-10 更新值 0.019 kWh', url:'https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references'},
     {id:'water', label:'烧开 1 L 水', unit:'升', wh:93, src:'NIST 水比热 4.184 kJ/(kg·K) 推得理论下限 0.093 kWh；实际电水壶约 100–115 Wh', url:'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Units=SI&Mask=203&Type=JANAFL&Table=on'},
-    {id:'ev', label:'电动车行驶', unit:'公里', wh:155, src:'EPA 综合工况 2026 Model 3 约 25 kWh/100 mi', url:'https://fueleconomy.gov/feg/PowerSearch.do?action=noform&path=1&year1=2026&year2=2026&make=Tesla&baseModel=Model%203&srchtyp=ymm'},
     {id:'bmr', label:'成人每日基础代谢', unit:'天', wh:1750, caveat:true, src:'FAO/WHO/UNU BMR 1.50–2.03 kWh/日（食物化学能，不是电力）', url:'https://www.fao.org/4/y5686e/y5686e07.htm'}
   ],
 
@@ -35,21 +37,24 @@ window.BT_RESEARCH = {
      kind:'physics' = 有真实能量基准，必须带 src+url；
      kind:'fiction' = 纯文学梗，没有物理依据，必须显式标注，禁止伪装成测量值。 */
   jokeAnalogies: [
-    {id:'movie', kind:'physics', label:'用电看完', unit:'遍《牛来》', wh:200,
-      src:'100 W 电视 × 2 h 片长 = 0.2 kWh；功率取 ENERGY STAR 认证电视典型值',
-      url:'https://www.energystar.gov/products/televisions'},
-    {id:'frog', kind:'fiction', label:'奶蛙同时大笑', unit:'只', wh:1/3600,
-      src:'基准为虚构：一只奶蛙笑一声记 1 J。无物理依据，纯文学，别引用',
-      url:null},
+    {id:'movie', kind:'physics', label:'够电影院放映', unit:'场《牛来》', wh:17000*86/90,
+      src:'一场中等规模影厅放映用电约 17 kWh（北京通州供电公司统计，按 90 min 计，含放映机/中央空调/影厅照明），按《牛来》真实片长 86 min 折算为 16.2 kWh；不含大堂与卖品公摊。高规格 IMAX 单场约 56.5 kWh（国网南京供电公司科普，2 h）是上限而非标准厅值',
+      url:'https://m.bilibili.com/opus/415772505206385079'},
+    {id:'frog', kind:'physics', label:'能生成', unit:'张奶蛙图片', wh:2282/3600,
+      src:'MIT Technology Review 2025-05 实测：Stable Diffusion 3 Medium 生成标准 1024×1024 图像（25 步）耗 GPU 1141 J，按芯片能耗翻倍计入数据中心其余开销 ≈ 2282 J ≈ 0.63 Wh。图像能耗与提示词内容无关，生成奶蛙与生成任何图像同价；不含模型训练',
+      url:'https://www.technologyreview.com/2025/05/20/1116327/ai-energy-usage-climate-footprint-big-tech/'},
+    {id:'kangaroo', kind:'physics', label:'够肥嘟嘟袋鼠跳', unit:'次', wh:90*9.8*1.9/3600,
+      src:'以真红袋鼠为力学模型（主语边界：梗里的「肥嘟嘟袋鼠」是美团外卖黄色袋鼠吉祥物被「你胆子真是肥嘟嘟的」二创出的迷因，不是真袋鼠；此处只借真红袋鼠体型做能量基准）：雄性 90 kg（Australian Museum 给上限 92 kg）× 重力 9.8 m/s² × 平均跳高 1.9 m（Wikipedia 给平均 1.2–1.9 m）= 1676 J ≈ 0.47 Wh。仅把质量垂直抬升的机械能下限，不含水平动能、肌效率与代谢',
+      url:'https://australianmuseum.net.au/red-kangaroo'},
     {id:'rocket', kind:'physics', label:'让马斯克发射火箭', unit:'枚', wh:5.0e12/3600,
-      src:'推算：Falcon 9 一级 RP-1 约 124 t × 43 MJ/kg ≈ 5×10¹² J（级别化学能，非官方公布）',
-      url:'https://www.spacex.com/vehicles/falcon-9/'},
+      src:'推算：Falcon 9 Block 5 一级 RP-1 箱容量 123,500 kg（约 124 t）× 热值 43.2 MJ/kg ≈ 5.3×10¹² J，量级取 5×10¹² J；仅燃料化学能，不含液氧/制造/发射，非官方公布',
+      url:'https://en.wikipedia.org/wiki/Falcon_9_Block_5'},
     {id:'ban', kind:'physics', label:'发送申诉邮件（然后被已读不回）', unit:'封', wh:0.006,
-      src:'100 KB 邮件附件 × 0.06 kWh/GB 网络传输强度；强度值见 IEA 4E 网络能耗口径',
-      url:'https://www.iea.org/reports/data-centres-and-data-transmission-networks'},
-    {id:'earth', kind:'physics', label:'让整个地球升温', unit:'℃', wh:5.5e24/3600,
-      src:'按地球热容约 5.5×10²⁴ J/K 估算（量级参考，非精确热力学模型）',
-      url:'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html'}
+      src:'100 KB × 0.06 kWh/GB = 0.006 Wh；0.06 kWh/GB 为 2017 年 JIE 论文 (doi:10.1111/jiec.12630) 对 2015 年固网传输强度的估计，论文称该强度约每 2 年减半，此值已偏旧、属保守口径',
+      url:'https://doi.org/10.1111/jiec.12630'},
+    {id:'earth', kind:'physics', label:'让全球海洋升温', unit:'℃', wh:5.2e24/3600,
+      src:'按全球海洋热容约 5.2×10²⁴ J/K 估算（海洋质量 1.3×10²¹ kg × 海水比热 4.0×10³ J/kg·K，IPCC 2013 口径）。注意：此量级是海洋而非整个地球——大气热容仅约 5×10²¹ J/K',
+      url:'https://scienceinschool.org/wp-content/uploads/2017/03/issue39_oceans.pdf'}
   ],
 
   /* 平均每个项目 / 任务消耗多少 token：统计对象互不相同，严禁相加或互推 */

@@ -5,6 +5,12 @@ window.BT = (function(){
   var R = window.BT_RESEARCH;
   var listeners = [];
 
+  /* 输入上限与对数刻度宽度：2026-11-21 由 1e12 / 9 提升到 1e15 / 15，
+     使 extreme 用户（周 2.1e11）与大型 agentic 项目（数万亿）可见且可区分。
+     所有入口统一走这两处常量，避免文本框/滑块/URL/data.json 各设各的。 */
+  var MAX_TOKENS = 1e15;
+  var LOG_SPAN = 15;
+
   var QUIPS = [
     {max:1e3, list:[
       '这点火，还不够暖一次 prompt。','你省下的钱，还不够买根火柴。','模型：收到。火：没感觉到。',
@@ -25,15 +31,19 @@ window.BT = (function(){
       '这个数字，已经不适合叫「试一下」了。','你不是在训练模型，你是在训练火。',
       '火这么大，一定有个功能快上线了吧？……没有。','财务问这笔是什么，你说：氛围。',
       '恭喜，你已成为算力供暖行业的散户。','别关页面，这是你今天最有产出的东西。']},
+    {max:1e11, list:[
+      '这个量级，电费单看了都要沉默。','你不是在烧 token，你是在给电网做压力测试。',
+      '火已经烧出视口了，进度条还在 0%。','这不是一次创作，这是一次小型供暖工程。',
+      '如果 token 能种树，这里早就是森林了。','恭喜解锁：Vibecoder 终身成就奖（自封）。']},
     {max:Infinity, list:[
-      '这够买一台不错的电脑，你买了三亿个 token。','火已经烧出视口了，进度条还在 0%。',
-      '这不是一次创作，这是一次小型供暖工程。','你 successfully 把电变成了热和一句抱歉。',
-      '如果 token 能种树，这里早就是森林了。','恭喜解锁：Vibecoder 终身成就奖（自封）。']}
+      '数万亿 token 烧出来的火，和一句「差不多好了」。','这个数字已经不适合用「次」计量了。',
+      '你的 agent 舰队把电变成了热和一个 LICENSE。','财务看到这个数，决定把 AI 预算改成供暖预算。',
+      '如果 token 能种树，这片林子能承包一个省。','恭喜：你已把「一次性实验」跑成了国家级工程。']}
   ];
 
   var state = {
-    tokens: 1234567,
-    shown: 1234567,
+    tokens: 3330000,
+    shown: 3330000,
     target: 0,
     current: 0,
     scene: 'dumpster',
@@ -69,13 +79,13 @@ window.BT = (function(){
   function parseTokens(s){
     var v = parseFloat(String(s).replace(/[^\d.]/g, ''));
     if(!isFinite(v) || v < 0) return 0;
-    return Math.min(v, 1e12);
+    return Math.min(v, MAX_TOKENS);
   }
 
   /* ---- 数值 → 火焰尺寸：唯一映射，两个渲染器共用 ---- */
   function intensity(t){
     if(!(t > 0)) return 0;
-    return Math.min(1, Math.log10(t + 1) / 9);
+    return Math.min(1, Math.log10(t + 1) / LOG_SPAN);
   }
   function heightRatio(t){ return 0.18 + 0.82 * intensity(t); }
   function mapping(t){
@@ -86,10 +96,10 @@ window.BT = (function(){
       intensity: i,
       heightRatio: h,
       /* 渲染器用它反解初速，使火焰实测高度贴合 heightRatio */
-      formula: 'h = 0.18 + 0.82 × log₁₀(T + 1) / 9',
-      ticks: [0,3,6,9].map(function(e){
+      formula: 'h = 0.18 + 0.82 × log₁₀(T + 1) / ' + LOG_SPAN,
+      ticks: [0,3,6,9,12,15].map(function(e){
         var v = Math.pow(10, e);
-        return {exp:e, tokens:v, ratio:0.18 + 0.82 * Math.log10(v + 1) / 9};
+        return {exp:e, tokens:v, ratio:0.18 + 0.82 * Math.log10(v + 1) / LOG_SPAN};
       })
     };
   }
@@ -106,7 +116,9 @@ window.BT = (function(){
   function energyAnalogies(t){
     var wh = energy(t).wh;
     return R.analogies.map(function(a){
-      return {id:a.id, act:'real', label:a.label, value:wh/a.wh, unit:a.unit,
+      /* tokens 项按 token 基准换算：J/token 与 PUE 在分子分母约掉，不随预设漂移 */
+      return {id:a.id, act:'real', label:a.label,
+        value: (a.tokens > 0) ? (t/a.tokens) : (wh/a.wh), unit:a.unit,
         src:a.src, url:a.url, caveat:!!a.caveat, fiction:false};
     });
   }
@@ -180,8 +192,8 @@ window.BT = (function(){
   }
 
   function setTokens(t, why){
-    state.tokens = t;
-    state.target = intensity(t);
+    state.tokens = Math.min(Math.max(0, Number(t) || 0), MAX_TOKENS);
+    state.target = intensity(state.tokens);
     if(why !== 'silent') pickQuip();
     emit(why || 'tokens');
   }
@@ -197,7 +209,7 @@ window.BT = (function(){
   function readURL(){
     var q = new URLSearchParams(location.search);
     var t = q.get('t');
-    if(t !== null && isFinite(Number(t))) state.tokens = Math.max(0, Number(t));
+    if(t !== null && isFinite(Number(t))) state.tokens = Math.min(Math.max(0, Number(t)), MAX_TOKENS);
     if(q.get('s')) state.scene = q.get('s');
     if(q.get('e')) state.energyPreset = q.get('e');
     state.shown = state.tokens;
