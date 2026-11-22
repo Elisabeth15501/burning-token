@@ -14,7 +14,7 @@ window.BTUI = (function(){
 
   function renderReadout(){
     var s = BT.state, c = BT.cost(s.tokens);
-    E.cost.innerHTML = '≈ ¥ ' + c.toFixed(2) +
+    E.cost.innerHTML = '≈ ¥ ' + BT.fmtMoney(c) +
       '<em>' + (s.exactCost ? '来自 data.json 实价' : '估算 @ ¥1 / 百万 token') + '</em>';
     E.quip.textContent = '「' + s.quip + '」';
     E.readout.classList.toggle('hidden', !s.showNumber);
@@ -28,7 +28,7 @@ window.BTUI = (function(){
     }).join('');
     E.scalePin.style.left = (m.heightRatio*100).toFixed(2) + '%';
     E.heightNow.textContent = '当前 T = ' + BT.fmt(m.tokens) +
-      ' → log₁₀(T+1) = ' + m.log10.toFixed(3) + ' → 火焰高度 ' + (m.heightRatio*100).toFixed(1) + '%';
+      ' → log₁₀(T+1) = ' + m.log10.toFixed(2) + ' → 火焰高度 ' + (m.heightRatio*100).toFixed(0) + '%';
   }
 
   function renderEnergy(){
@@ -50,7 +50,7 @@ window.BTUI = (function(){
     var list = BT.analogies(BT.state.tokens);
     E.analogies.innerHTML = list.map(function(a){
       return '<div class="card' + (a.caveat ? ' warn' : '') + '">' +
-        '<div class="v">' + BT.fmtNum(a.value) + '<em>' + esc(a.unit) + '</em></div>' +
+        '<div class="v">' + BT.fmtAnalog(a).html + '<em>' + esc(a.unit) + '</em></div>' +
         '<div class="l">' + esc(a.label) + (a.caveat ? '（食物化学能，非电力）' : '') + '</div>' +
         '<div class="s">' + esc(a.src) + ' · <a href="' + a.url + '" target="_blank" rel="noopener">来源</a></div>' +
         '</div>';
@@ -69,7 +69,7 @@ window.BTUI = (function(){
       'total_tokens <b>' + BT.fmt(m.total_tokens) + '</b> · input <b>' + BT.fmt(m.input_tokens) +
       '</b> · output <b>' + BT.fmt(m.output_tokens) + '</b><br>' +
       'cached <b>' + BT.fmt(m.cached_tokens) + '</b> · effective <b>' + BT.fmt(m.effective_tokens) +
-      '</b> · effective_cost <b>¥' + m.effective_cost.toFixed(2) + '</b><br>' +
+      '</b> · effective_cost <b>¥' + BT.fmtMoney(m.effective_cost) + '</b><br>' +
       '<span class="none">火焰尺寸取自 total_tokens（缺失时回退 effective_tokens）。</span>';
   }
 
@@ -101,7 +101,7 @@ window.BTUI = (function(){
     var bEl = $('recapBench');
     if(bEl){
       bEl.innerHTML = BT.benchAnalogies(BT.state.tokens).map(function(a){
-        return '<div class="recap-row"><span class="r-v">' + BT.fmtNum(a.value) + '<em>' + esc(a.unit) + '</em></span>' +
+        return '<div class="recap-row"><span class="r-v">' + BT.fmtAnalog(a).html + '<em>' + esc(a.unit) + '</em></span>' +
           '<span class="r-l">' + esc(a.label) + '</span></div>';
       }).join('');
     }
@@ -236,7 +236,7 @@ window.BTUI = (function(){
       y = 1010;
     }
     g.fillStyle = '#ffc861'; g.font = '26px ui-monospace, Menlo, Consolas, monospace';
-    g.fillText('≈ ' + BT.fmtNum(BT.energy(BT.state.tokens).wh) + ' Wh  ·  ≈ ¥' + BT.cost(BT.state.tokens).toFixed(2), 540, y);
+    g.fillText('≈ ' + BT.fmtEnergy(BT.energy(BT.state.tokens).wh) + '  ·  ≈ ¥' + BT.fmtMoney(BT.cost(BT.state.tokens)), 540, y);
     y += 62;
     g.fillStyle = '#c9c5bd'; g.font = '28px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
     wrapText(g, '「' + BT.state.quip + '」', 540, y, 800, 42);
@@ -325,7 +325,7 @@ window.BTUI = (function(){
           var m = BT.applyData(JSON.parse(reader.result));
           renderAll();
           hint('已解析 ' + m.traces + ' 条记录，合计 ' + BT.fmt(m.total_tokens) +
-            ' tokens；实价 ¥' + m.effective_cost.toFixed(2) + '。仅本机解析，未上传。', 'ok');
+            ' tokens；实价 ¥' + BT.fmtMoney(m.effective_cost) + '。仅本机解析，未上传。', 'ok');
         }catch(err){ hint('解析失败：' + err.message + '。需要含 traces[] 的 data.json。', 'bad'); }
         E.file.value = '';
       };

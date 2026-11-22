@@ -62,19 +62,47 @@ window.BT = (function(){
   function emit(why){ listeners.forEach(function(fn){ try{ fn(why); }catch(e){} }); }
   function on(fn){ listeners.push(fn); return function(){ listeners = listeners.filter(function(x){return x!==fn;}); }; }
 
-  function fmt(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-  function fmtShort(n){
-    if(n >= 1e8) return (n/1e8).toFixed(2) + ' 亿';
-    if(n >= 1e4) return (n/1e4).toFixed(2) + ' 万';
-    return fmt(n);
+  /* ===== 全站数字口径（2026-11-23）=====
+     1. 中文语境统一用中文计数单位（万/亿/万亿），不用 K/M（要心算 ×1000）。
+     2. 最多 3 位有效数字，避免 391.27 这类长尾。
+     3. 类比数值只走 fmtAnalog()：卡片 / 幻灯片 / 结算 / bench 逐字一致。
+     4. token 总量用千分位；极小概率用 1/N；超小值用 ×10ⁿ（不用 e 记法）。
+     5. 能量用 fmtEnergy() 自动选 kWh/Wh，避免「2.35 K Wh」中英混排。 */
+  function fmt(n){
+    if(!isFinite(n)) return '—';
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  /* 最多 3 位有效数字，去掉无意义的尾零 */
+  function sig(v){
+    if(!isFinite(v)) return '—';
+    if(v === 0) return '0';
+    var a = Math.abs(v), s;
+    if(a >= 100)     s = String(Math.round(v));
+    else if(a >= 10) s = v.toFixed(1);
+    else             s = v.toFixed(2);
+    return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
   }
   function fmtNum(v){
     if(!isFinite(v)) return '—';
-    if(v >= 1e6) return (v/1e6).toFixed(2) + ' M';
-    if(v >= 1e3) return (v/1e3).toFixed(2) + ' K';
-    if(v >= 10) return v.toFixed(1);
-    if(v >= 0.1) return v.toFixed(2);
-    return v.toExponential(1);
+    var neg = v < 0, a = Math.abs(v), s;
+    if(a >= 1e12)      s = sig(a/1e12) + ' 万亿';
+    else if(a >= 1e8)  s = sig(a/1e8) + ' 亿';
+    else if(a >= 1e4)  s = sig(a/1e4) + ' 万';
+    else if(a >= 1e3)  s = fmt(Math.round(a));
+    else s = sig(a);
+    return (neg ? '-' : '') + s;
+  }
+  function fmtShort(n){ return fmtNum(n); } /* 兼容旧调用，口径已统一 */
+  function fmtEnergy(wh){
+    if(!isFinite(wh)) return '—';
+    return wh >= 1000 ? fmtNum(wh/1000) + ' kWh' : sig(wh) + ' Wh';
+  }
+  /* 费用：小额保留到分（¥0.10 比 ¥0.1 规范），大额改中文计数避免 ¥1000000000.00 */
+  function fmtMoney(v){
+    if(!isFinite(v)) return '—';
+    if(v > 0 && v < 0.01) return '<0.01';
+    if(v < 1000) return v.toFixed(2);
+    return fmtNum(v);
   }
   function parseTokens(s){
     var v = parseFloat(String(s).replace(/[^\d.]/g, ''));
@@ -218,17 +246,20 @@ window.BT = (function(){
     pickQuip();
   }
 
-  /* 类比数值的显示口径（幻灯片与结算清单共用）：
-     能读的倒数用 1/N，太小用科学计数法，大数用中文万/亿 */
+  /* 类比数值的唯一出口：幻灯片 / 类比卡片 / 结算清单 / bench 必须共用，
+     避免同一条数据在不同位置出现 1.7e-6 与 1/591,608 两种写法。 */
   function fmtAnalog(a){
-    if(a.inv && a.inv <= 1e7) return {text:'1/' + fmt(a.inv), html:'1/' + fmt(a.inv)};
+    if(a.inv && a.inv <= 1e7){ return {text:'1/' + fmt(a.inv), html:'1/' + fmt(a.inv)}; }
     if(a.value > 0 && a.value < 0.01){
       var e = Math.floor(Math.log10(a.value));
       var m = (a.value / Math.pow(10, e)).toFixed(1);
-      return {text: m + 'e' + e, html: m + ' × 10<sup>' + e + '</sup>'};
+      var sup = String(e).replace(/-/g, '⁻').replace(/\d/g, function(d){
+        return '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)];
+      });
+      return {text: m + ' × 10' + sup, html: m + ' × 10<sup>' + e + '</sup>'};
     }
-    if(a.value >= 1e4) return {text: fmtShort(a.value), html: fmtShort(a.value)};
-    return {text: fmtNum(a.value), html: fmtNum(a.value)};
+    var s = fmtNum(a.value);
+    return {text: s, html: s};
   }
 
   var SCENE_LABELS = {dumpster:'垃圾箱火灾', campfire:'营火', barbecue:'烧烤'};
@@ -236,7 +267,7 @@ window.BT = (function(){
 
   return {
     state:state, R:R, on:on, emit:emit,
-    fmt:fmt, fmtShort:fmtShort, fmtNum:fmtNum, parseTokens:parseTokens,
+    fmt:fmt, fmtShort:fmtShort, fmtNum:fmtNum, fmtEnergy:fmtEnergy, fmtMoney:fmtMoney, parseTokens:parseTokens,
     intensity:intensity, heightRatio:heightRatio, mapping:mapping,
     preset:preset, energy:energy, cost:cost,
     analogies:analogies, energyAnalogies:energyAnalogies, jokeAnalogies:jokeAnalogies,

@@ -25,7 +25,7 @@ window.BTSTORY = (function(){
 
   function heroSync(){
     E.heroTokens.textContent = BT.fmt(BT.state.tokens);
-    E.heroEnergy.textContent = BT.fmtNum(BT.energy(BT.state.tokens).wh) + ' Wh';
+    E.heroEnergy.textContent = BT.fmtEnergy(BT.energy(BT.state.tokens).wh);
   }
 
   function buildSlides(){
